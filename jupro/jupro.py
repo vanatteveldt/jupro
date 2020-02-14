@@ -134,7 +134,7 @@ class Cell:
                         yield html
 
     def text_output(self) -> str:
-        return "\n".join(x.strip() for x in self.get_text_outputs())
+        return "\n".join(x.rstrip() for x in self.get_text_outputs())
 
     def html_pdf_output(self):
         html = "\n".join(self.get_html_outputs())
@@ -157,13 +157,24 @@ class Cell:
         if len(tables) > 1:
             raise ValueError("More than one table, cannot save as single snippet")
         header, body = parse_table(tables[0])
-        result = f"\\begin{{tabularx}}{{\\linewidth}}{{XXX}}\n  \\toprule\n"
-        for row in header:
+        ncol = len(header[0])
+        if len(header) == 2 and all(x.startswith("<") for x in header[1]):
+            # This looks like a tibble :)
+            TIBBLE_TYPES = {"<dbl>": "r", "<int>": "r"}
+            colspec = "".join([TIBBLE_TYPES.get(x, "l") for x in header[1]])
+        elif body:
+            colspec = "l" * len(body[0])
+        else:
+            raise Exception("Silly!")
+        result = f"\\begin{{tabular}}{{{colspec}}}\n  \\toprule\n"
+        for i, row in enumerate(header):
+            fn = 'ccstablehead' if i == 0 else 'ccstablesubhead'
+            row = [f'\\{fn}{{{x}}}' for x in row]
             result += f'  {" & ".join(row)}\\\\\n'
         result += "  \\midrule\n"
         for row in body:
             result += f'  {" & ".join(row)}\\\\\n'
-        result += "  \\bottomrule\n\\end{tabularx}\n"
+        result += "  \\bottomrule\n\\end{tabular}\n"
         return result
 
 
