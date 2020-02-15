@@ -134,7 +134,9 @@ class Cell:
                         yield html
 
     def text_output(self) -> str:
-        return "\n".join(x.rstrip() for x in self.get_text_outputs())
+        def clean(x):
+            return x.rstrip().replace("\u00d7", "x")
+        return "\n".join(clean(x) for x in self.get_text_outputs())
 
     def html_pdf_output(self):
         html = "\n".join(self.get_html_outputs())
