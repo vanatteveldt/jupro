@@ -161,12 +161,17 @@ class Cell:
         if len(header) == 2 and all(x.startswith("<") for x in header[1]):
             # This looks like a tibble :)
             TIBBLE_TYPES = {"<dbl>": "r", "<int>": "r"}
-            colspec = "".join([TIBBLE_TYPES.get(x, "l") for x in header[1]])
+            colspec = "".join([TIBBLE_TYPES.get(x, "X") for x in header[1]])
         elif body:
             colspec = "l" * len(body[0])
         else:
             raise Exception("Silly!")
-        result = f"\\begin{{tabular}}{{{colspec}}}\n  \\toprule\n"
+        resize = "resize" in self.tags("table:")
+        if resize:
+            colspec = colspec.replace('X', 'l')
+            result = f"\\resizebox{{\\linewidth}}{{!}}{{\\begin{{tabular}}{{{colspec}}}\n  \\toprule\n"
+        else:
+            result = f"\\begin{{tabularx}}{{\linewidth}}{{{colspec}}}\n  \\toprule\n"
         for i, row in enumerate(header):
             fn = 'ccstablehead' if i == 0 else 'ccstablesubhead'
             row = [f'\\{fn}{{{x}}}' for x in row]
@@ -174,7 +179,10 @@ class Cell:
         result += "  \\midrule\n"
         for row in body:
             result += f'  {" & ".join(row)}\\\\\n'
-        result += "  \\bottomrule\n\\end{tabular}\n"
+        if resize:
+            result += "  \\bottomrule\n\\end{tabular}}\n"
+        else:
+            result += "  \\bottomrule\n\\end{tabularx}\n"
         return result
 
 
