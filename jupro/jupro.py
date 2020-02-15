@@ -164,11 +164,16 @@ class Cell:
             # This looks like a tibble :)
             TIBBLE_TYPES = {"<dbl>": "r", "<int>": "r"}
             colspec = "".join([TIBBLE_TYPES.get(x, "X") for x in header[1]])
+            if "X" not in colspec:
+                colspec = "X"*len(colspec)
         elif body:
-            colspec = "l" * len(body[0])
+            colspec = "X" * len(body[0])
         else:
             raise Exception("Silly!")
         resize = "resize" in self.tags("table:")
+
+        def clean(x):
+            return x.replace("_", "\\_")
         if resize:
             colspec = colspec.replace('X', 'l')
             result = f"\\resizebox{{\\linewidth}}{{!}}{{\\begin{{tabular}}{{{colspec}}}\n  \\toprule\n"
@@ -176,7 +181,7 @@ class Cell:
             result = f"\\begin{{tabularx}}{{\linewidth}}{{{colspec}}}\n  \\toprule\n"
         for i, row in enumerate(header):
             fn = 'ccstablehead' if i == 0 else 'ccstablesubhead'
-            row = [f'\\{fn}{{{x}}}' for x in row]
+            row = [f'\\{fn}{{{clean(x)}}}' for x in row]
             result += f'  {" & ".join(row)}\\\\\n'
         result += "  \\midrule\n"
         for row in body:
@@ -186,7 +191,6 @@ class Cell:
         else:
             result += "  \\bottomrule\n\\end{tabularx}\n"
         return result
-
 
 def parse_table(table_html: str) -> Tuple[list, list]:
     """Parse an html table and return (header, body), each a list of lists"""
