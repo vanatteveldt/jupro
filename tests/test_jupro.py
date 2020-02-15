@@ -20,20 +20,19 @@ def get_snippet_output(fn):
 def test_simpletext():
     py, r = get_snippet_output("simpletext")
     assert_equals(py, "'simple text'")
-    assert_equals(r, "'simple text'")
+    assert_equals(r, '[1] "simple text"')
 
 
 def test_prints():
     py, r = get_snippet_output("prints")
     assert_equals(py, 'first print\nsecond print')
-    # In R we use 'glue' to print so it adds quotes
-    assert_equals(r, "'first print'\n'second print'")
+    assert_equals(r, "first print\nsecond print")
 
 
 def test_plot():
     py, r = get_snippet_output("plot")
     assert_equals(py, 'before plot\nafter plot')
-    assert_equals(r, "'before plot'\n'after plot'")
+    assert_equals(r, '[1] "before plot"\n[1] "after plot"')
     assert (SNIPPETS / f"plot.py.png").exists()
     assert (SNIPPETS / f"plot.r.png").exists()
 
@@ -49,7 +48,7 @@ def test_stderr():
     """stderr should be excluded by default"""
     py, r = get_snippet_output("stderr")
     assert_equals(py, "Normal output")
-    assert_equals(r, "'Normal output'")
+    assert_equals(r, "Normal output")
 
 
 

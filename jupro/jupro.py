@@ -108,8 +108,6 @@ class Cell:
                 if 'image/png' in d:
                     # Skip the "plot without title" text on graphical output
                     continue
-                elif 'text/latex' in d:
-                    yield from d['text/latex']
                 else:
                     yield from d['text/plain']
 
@@ -196,7 +194,7 @@ def parse_table(table_html: str) -> Tuple[list, list]:
     """Parse an html table and return (header, body), each a list of lists"""
     doc = html.fromstring(table_html)
     header = [[th.text_content() for th in row.cssselect("th")] for row in doc.cssselect("thead tr")]
-    body = [[td.text_content() for td in row.cssselect("td")] for row in doc.cssselect("tbody tr")]
+    body = [[td.text_content() for td in row.cssselect("td,th")] for row in doc.cssselect("tbody tr")]
     return header, body
 
 
