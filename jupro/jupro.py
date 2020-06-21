@@ -113,7 +113,7 @@ class Cell:
 
     def get_png_outputs(self):
         for output in self.data['outputs']:
-            if output['output_type'] == 'display_data':
+            if output['output_type'] in {'display_data', 'execute_result'}:
                 if 'image/png' in output['data']:
                     yield output['data']['image/png']
 
