@@ -183,6 +183,7 @@ class Cell:
             result += f'  {" & ".join(row)}\\\\\n'
         result += "  \\midrule\n"
         for row in body:
+            row = [clean(x) for x in row]
             result += f'  {" & ".join(row)}\\\\\n'
         if resize:
             result += "  \\bottomrule\n\\end{tabular}}\n"
