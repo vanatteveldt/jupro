@@ -171,7 +171,7 @@ class Cell:
         resize = "resize" in self.tags("table:")
 
         def clean(x):
-            return x.replace("_", "\\_").replace("#", "\\#")
+            return x.replace("_", "\\_").replace("#", "\\#").replace("%", "\\%").replace("$", "\\$")
         if resize:
             colspec = colspec.replace('X', 'l')
             result = f"\\resizebox{{\\linewidth}}{{!}}{{\\begin{{tabular}}{{{colspec}}}\n  \\toprule\n"
