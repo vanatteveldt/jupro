@@ -5,6 +5,7 @@ from base64 import b64decode
 from pathlib import Path
 import subprocess
 from typing import Tuple
+import re
 
 from lxml import html
 
@@ -133,7 +134,10 @@ class Cell:
 
     def text_output(self) -> str:
         def clean(x):
-            return x.rstrip().replace("\u00d7", "x")
+            x = x.rstrip().replace("\u00d7", "x").replace("…", ".")
+            x = re.sub(r"\x1b\[[\d;]+m", "", x)
+            return x
+        
         return "\n".join(clean(x) for x in self.get_text_outputs())
 
     def html_pdf_output(self):
@@ -171,7 +175,7 @@ class Cell:
         resize = "resize" in self.tags("table:")
 
         def clean(x):
-            return x.replace("_", "\\_").replace("#", "\\#").replace("%", "\\%").replace("$", "\\$")
+            return x.replace("_", "\\_").replace("#", "\\#").replace("%", "\\%").replace("$", "\\$").replace("&","\\&")
         if resize:
             colspec = colspec.replace('X', 'l')
             result = f"\\resizebox{{\\linewidth}}{{!}}{{\\begin{{tabular}}{{{colspec}}}\n  \\toprule\n"
