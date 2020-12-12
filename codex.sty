@@ -1,0 +1,232 @@
+% encoding: UTF-8
+\RequirePackage{xkeyval}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{skins,breakable,xparse,raster}
+\RequirePackage{listings}
+\RequirePackage{newfloat}
+\RequirePackage{xstring}
+\RequirePackage[utf8]{inputenc}
+\DeclareFloatingEnvironment[fileext=ex,placement={!ht},name=Example]{ccsexample}
+
+\newlinechar=`\^^J
+\DeclareUnicodeCharacter{22EF}{\ldots}
+%%%%%%%%%%%%%%%%%%%%%%%%
+%% Code listing style
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{inputpath=snippets,
+	basicstyle=\tiny\ttfamily,
+	columns=flexible,
+	breaklines=true,
+        literate={Ö}{{\"O}}1 {ö}{{\"o}}1 {Ä}{{\"A}}1 {ä}{{\"a}}1 {ü}{{\"u}}1 {Ü}{{\"u}}1 {°}{\dg}1 {⋯}{{\ldots}}1
+	%stepsize=1,
+}
+
+\definecolor{darkblue}{rgb}{0,0,0.3}
+\lstdefinestyle{r}{language=R,
+  showstringspaces=false,
+  stringstyle=\color{darkblue},
+  morekeywords={select,filter,rename},
+  numbers=left,
+	numberstyle=\tiny\color{gray},
+        numbersep=4pt,
+}
+\lstdefinestyle{py}{language=python,
+  showstringspaces=false,
+  stringstyle=\color{darkblue},
+  morekeywords={select,filter,rename},
+  numbers=left,
+	numberstyle=\tiny\color{gray},
+        numbersep=4pt,
+}
+\lstdefinestyle{out}{language={},
+  showstringspaces=false,
+  stringstyle=\color{darkblue},
+  morekeywords={select,filter,rename},
+}
+
+\def\@expandxargs#1#2#3{%
+  \edef\reserved@a{\noexpand#1[#2]{#3}}\reserved@a}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%% Commands
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\renewcommand{\thechapter}{\message{CHAPTER \arabic{chapter}}\arabic{chapter}}
+
+%\let\oldchapter\chapter
+%\def\chapter{\oldchapter\message{CHAPTER \thechapter}}
+
+\newcommand{\ccstablehead}[1]{\multicolumn{1}{l}{#1}}
+\newcommand{\ccstablesubhead}[1]{\ccstablehead{\gray\tiny#1}}
+
+
+% \codex[lang={py,r},output=true,code=true]{snippet_without_extension}
+% single code example in tcolorbox
+
+% create macros for lang/output options so can be used in ifx
+\def\codex@options@py{py}
+\def\codex@options@r{r}
+\def\codex@options@none{none}
+\def\codex@options@both{both}
+\def\codex@options@out{out}
+\def\codex@options@html{html}
+\def\codex@options@table{table}
+\def\codex@options@png{png}
+\def\codex@options@plain{plain}
+
+\define@key{codex}{caption}[]{\def\codex@caption{#1}}
+\define@key{codex}{outputtitle}[]{\def\codex@outputtitle{#1}}
+\define@choicekey{codex}{input}[\codex@input]{r,py,both,none}[both]{}
+\define@choicekey{codex}{output}[\codex@output]{r,py,both,none}[both]{}
+\define@choicekey{codex}{format}[\codex@format]{plain,html,table,png}[plain]{}
+\presetkeys{codex}{caption}{caption=}
+\presetkeys{codex}{outputtitle}{outputtitle=Output}
+
+% \codex[caption=]{snippet.ext}
+% single code listing in a tcolor box
+\newcommand{\codex}[2][]{{%
+    \addtocounter{ccsexample}{1}%
+  \message{^^JEXAMPLE \theccsexample: code #2^^J}%
+    \addtocounter{ccsexample}{-1}%
+  \setkeys{codex}{caption,#1}%
+  \StrCount{#2}{.}[\nbmatch]%
+  \StrCut[\nbmatch]{#2}{.}\tmp\myext%
+  \ifx\codex@caption\empty \def\codex@caption{#2}\fi
+  \begin{tcolorbox}[title=\codex@caption,left=\ifx\myext\codex@options@out1mm\else5mm\fi]
+    % the extension defines the style, (name.r.out -> out)
+    \lstinputlisting[style=\myext]{#2}
+\end{tcolorbox}}%
+}
+
+% Functions for outputting parts of example boxes
+% All functions take the snippetname as argument (so without the snippets/ path)
+% Except for doublecodex, the .py or .r should be included
+
+\newcommand{\doublecodex}[1]{
+\begin{tcbraster}[raster columns=2,raster equal height=rows,raster valign=top]
+   \codex[caption=Python Code]{#1.py}
+   \codex[caption=R Code]{#1.r}
+\end{tcbraster}
+}
+
+\newcommand{\doubleoutput}[1]{
+\begin{tcbraster}[raster columns=2,raster equal height=rows,raster valign=top]
+   \codex[caption=Python Output]{#1.py.out}
+   \codex[caption=R Output]{#1.r.out}
+\end{tcbraster}
+}
+
+\newcommand{\doubleoutputpng}[1]{
+  \begin{tcbraster}[raster columns=2,raster equal height=rows,raster valign=top]
+    \codexoutputpng[Python]{#1.py}
+    \codexoutputpng[R]{#1.r}
+\end{tcbraster}
+}
+
+\newcommand{\codexoutputpng}[2][]{%
+  \addtocounter{ccsexample}{1}%
+  \message{^^JEXAMPLE \theccsexample: figure #2.png^^J}%
+  \addtocounter{ccsexample}{-1}%
+  \def\codex@tmp{#1}%
+  \ifx\codex@tmp\empty
+      \def\codex@tmp{Output}%
+      \else
+      \def\codex@tmp{Output: #1}%
+      \fi
+\codexpng{\codex@tmp}{\linewidth}{#2}%
+} 
+
+\newcommand{\codexpng}[3]{%
+\begin{tcolorbox}[title=#1]
+    \centering\includegraphics[width=#2]{{snippets/#3}.png}
+\end{tcolorbox}%
+} 
+
+\newcommand{\codexoutputhtml}[2][]{
+  \def\codex@tmp{#1}
+  \ifx\codex@tmp\empty
+      \def\codex@tmp{Output}
+      \else
+      \def\codex@tmp{Output: #1}    
+    \fi  
+\begin{tcolorbox}[title=\codex@tmp]
+    \includegraphics[width=\linewidth]{{snippets/#2.html}.pdf}
+\end{tcolorbox}
+} 
+
+\newcommand{\codexoutputtable}[2][]{
+  \addtocounter{ccsexample}{1}%
+  \message{^^JEXAMPLE \theccsexample: table snippets/#2.table.tex^^J}%
+  \addtocounter{ccsexample}{-1}%
+  \def\codex@tmp{#1}
+  \ifx\codex@tmp\empty
+      \def\codex@tmp{Output}
+      \else
+      \def\codex@tmp{Output: #1}    
+    \fi  
+  \begin{tcolorbox}[title=\codex@tmp]
+    {\scriptsize\singlespacing
+      \input{snippets/#2.table.tex}
+    }
+  \end{tcolorbox}
+} 
+
+\def\codex@langname#1{\ifx#1\codex@options@py{Python}\else{R}\fi}
+
+% \rpyex[output={both,r,py,none}]
+% 'example' float with (multiple) code examples
+\newcommand{\pyrex}[2][]{{%
+  \setkeys{codex}{caption,output,input,format,outputtitle,#1}%
+  \begin{ccsexample}
+    % Source code block (none, both, r/py)
+    \ifx\codex@input\codex@options@none
+      % do nothing  
+    \else\ifx\codex@input\codex@options@both
+      \doublecodex{#2}
+    \else
+      \codex[caption=\codex@langname{\codex@input} Code]{#2.\codex@input}
+    \fi\fi
+
+    % Output block (none, both, single)
+    \ifx\codex@output\codex@options@none
+      % do nothing
+    \else
+      \ifx\codex@output\codex@options@both
+        \ifx\codex@format\codex@options@plain
+          \doubleoutput{#2}
+        \else
+          \ifx\codex@format\codex@options@png
+            \doubleoutputpng{#2}
+          \else
+            \PackageError{codex}{Specify output (py or r) when using format=\codex@format}{Custom formats are only supported for single outputs}
+          \fi
+        \fi
+      \else
+        \ifx\codex@format\codex@options@html
+          \codexoutputhtml[\codex@outputtitle]{#2.\codex@output}
+        \fi
+        \ifx\codex@format\codex@options@table
+          \codexoutputtable[\codex@outputtitle]{#2.\codex@output}
+        \fi
+        \ifx\codex@format\codex@options@png
+          \codexoutputpng[\codex@outputtitle]{#2.\codex@output}
+        \fi
+        \ifx\codex@format\codex@options@plain
+          \codex[caption=\codex@outputtitle]{#2.\codex@output.out}
+        \fi
+      \fi
+    \fi
+    % caption and label (set to ex:snippetname)
+    \caption{\ifx\codex@caption\empty #2\else \codex@caption\fi}
+      \StrCount{#2}{/}[\nbmatch]%
+      \StrCut[\nbmatch]{#2}{/}\tmptmp\snippetlabel%
+      \label{ex:\snippetlabel}
+  \end{ccsexample}
+}}
+
+
+
+
+
+
