@@ -40,6 +40,7 @@ def create_snippets(fn: Path, out_folder=None):
                 write_cropped_pdf(out_folder/f"{name}{ext}.html.pdf", cell.html_pdf_output())
             if 'table' in cell.requested_output:
                 write(out_folder / f"{name}{ext}.table.tex", cell.table_output())
+                write(out_folder / f"{name}{ext}.table.html", cell.table_output_html())
 
 
 def write(file: Path, text: str):
@@ -153,14 +154,18 @@ class Cell:
             raise ValueError("More than one PNG, cannot save as picture")
         return b64decode(pngs[0])
 
-    def table_output(self) -> str:
+    def table_output_html(self) -> str:
         """Extract a table from the HTML and return as latex tabularx snippet"""
         tables = list(self.get_table_outputs())
         if not tables:
             raise ValueError("No table present")
         if len(tables) > 1:
             raise ValueError("More than one table, cannot save as single snippet")
-        header, body = parse_table(tables[0])
+        return tables[0]
+
+    def table_output(self) -> str:
+        """Extract a table from the HTML and return as latex tabularx snippet"""
+        header, body = parse_table(self.table_output_html())
         ncol = len(header[0])
         if len(header) == 2 and all(x.startswith("<") for x in header[1]):
             # This looks like a tibble :)
