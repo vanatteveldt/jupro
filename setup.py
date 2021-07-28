@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+# To publish, use:
+# python setup.py sdist
+# twine upload dist/jupro-0.11.tar.gz 
+
+
 from distutils.core import setup
 
 setup(
