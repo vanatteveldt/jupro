@@ -9,7 +9,7 @@ from distutils.core import setup
 
 setup(
     name="jupro",
-    version="0.14",
+    version="0.15",
     description="Process jupyter cells into latex snippets",
     author="Wouter van Atteveldt",
     author_email="wouter@vanatteveldt.com",
