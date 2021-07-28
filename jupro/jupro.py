@@ -37,6 +37,8 @@ def create_snippets(fn: Path, out_folder=None):
             if 'png' in cell.requested_output:
                 write_bytes(out_folder/f"{name}{ext}.png", cell.png_output())
             if 'html' in cell.requested_output:
+                html = "\n".join(cell.get_html_outputs()).strip()
+                write(out_folder / f"{name}{ext}.html", html)
                 write_cropped_pdf(out_folder/f"{name}{ext}.html.pdf", cell.html_pdf_output())
             if 'table' in cell.requested_output:
                 write(out_folder / f"{name}{ext}.table.tex", cell.table_output())

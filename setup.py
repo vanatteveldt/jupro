@@ -2,14 +2,14 @@
 
 # To publish, use:
 # python setup.py sdist
-# twine upload dist/jupro-0.11.tar.gz 
+# twine upload dist/jupro-0.xx.tar.gz
 
 
 from distutils.core import setup
 
 setup(
     name="jupro",
-    version="0.15",
+    version="0.16",
     description="Process jupyter cells into latex snippets",
     author="Wouter van Atteveldt",
     author_email="wouter@vanatteveldt.com",
